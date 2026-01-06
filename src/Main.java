@@ -93,7 +93,8 @@ public class Main {
         scanner.nextLine();
         try {
             List<Note> notes = fileStorage.loadFromFile();
-            notes.remove(id - 1);
+            int index = findNoteIndexById(notes, id);
+            notes.remove(index);
             fileStorage.saveToFile(notes);
         } catch (IndexOutOfBoundsException e) {
             System.out.println("Can not find note with id " + id);
