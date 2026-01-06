@@ -19,7 +19,7 @@ public class FileStorage {
 
     public List<Note> loadFromFile() {
         List<Note> notes = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         try (BufferedReader reader = new BufferedReader(new FileReader(FILENAME))) {
             String line;
             while ((line = reader.readLine()) != null) {

@@ -5,8 +5,9 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        FileStorage fileStorage = new FileStorage();
 
-        System.out.printf("Welcome Note App!");
+        System.out.println("Welcome Note App!");
         while (true) {
             try {
                 System.out.println("-------------------------------------");
@@ -18,21 +19,23 @@ public class Main {
                 System.out.println("5. End of program");
                 System.out.print("Please select your options: ");
                 int option = scanner.nextInt();
+                scanner.nextLine();
                 switch (option) {
                     case 1:
-                        getNotes();
+                        getNotes(fileStorage);
                         break;
                     case 2:
-                        addNote(scanner);
+                        addNote(fileStorage, scanner);
                         break;
                     case 3:
-                        editNote(scanner);
+                        editNote(fileStorage, scanner);
                         break;
                     case 4:
-                        deleteNote();
+                        deleteNote(fileStorage, scanner);
                         break;
                     case 5:
-                        System.out.print("Enter title: ");
+                        System.exit(0);
+                        scanner.close();
                         break;
                     default:
                         throw new Exception("Invalid option");
@@ -43,20 +46,18 @@ public class Main {
         }
     }
 
-    public static void getNotes() {
-        FileStorage fileStorage = new FileStorage();
+    public static void getNotes(FileStorage fileStorage) {
         List<Note> notes = fileStorage.loadFromFile();
         for (Note note : notes) {
             System.out.println(note);
         }
     }
 
-    public static void addNote(Scanner scanner) {
+    public static void addNote(FileStorage fileStorage, Scanner scanner) {
         System.out.print("Enter title: ");
-        String title = scanner.next();
+        String title = scanner.nextLine();
         System.out.print("Enter content: ");
-        String content = scanner.next();
-        FileStorage fileStorage = new FileStorage();
+        String content = scanner.nextLine();
         List<Note> notes = fileStorage.loadFromFile();
         int id = !notes.isEmpty() ? notes.get(notes.size() - 1).getId() + 1 : 1;
         LocalDate localDate = LocalDate.now();
@@ -65,12 +66,57 @@ public class Main {
         fileStorage.saveToFile(notes);
     }
 
-    public static void editNote(Scanner scanner) {
+    public static void editNote(FileStorage fileStorage, Scanner scanner) {
         System.out.print("Enter id: ");
         int id = scanner.nextInt();
+        scanner.nextLine();
+        List<Note> notes = fileStorage.loadFromFile();
+        Note note = findNoteById(notes, id);
+        if (note == null) {
+            System.out.println("Note not found");
+            return;
+        }
+        int index = findNoteIndexById(notes, id);
+        LocalDate localDate = LocalDate.now();
+
+        System.out.print("Enter title: ");
+        String title = scanner.nextLine();
+        System.out.print("Enter content: ");
+        String content = scanner.nextLine();
+        notes.set(index, new Note(id, title, content, localDate));
+        fileStorage.saveToFile(notes);
     }
 
-    public static void deleteNote() {
+    public static void deleteNote(FileStorage fileStorage, Scanner scanner) {
+        System.out.print("Enter id: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+        try {
+            List<Note> notes = fileStorage.loadFromFile();
+            notes.remove(id - 1);
+            fileStorage.saveToFile(notes);
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Can not find note with id " + id);
+        }
+    }
 
+    private static Note findNoteById(List<Note> notes, int id) {
+        for (Note note: notes) {
+            if (note.getId() == id) {
+                return note;
+            }
+        }
+
+        return null;
+    }
+
+    private static int findNoteIndexById(List<Note> notes, int id) {
+        for (int i = 0; i < notes.size(); i++) {
+            if (notes.get(i).getId() == id) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }
